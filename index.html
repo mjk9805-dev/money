@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>경제 뉴스 브리핑</title>
+  <style>
+    :root{
+      --bg:#f8fafc; --card:#fff; --text:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --dark:#111827; --blue:#2563eb; --bluebg:#eff6ff; --green:#059669; --greenbg:#ecfdf5; --amber:#b45309; --amberbg:#fffbeb;
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif}
+    .wrap{max-width:720px;margin:0 auto;padding:16px 16px 36px}
+    .hero{background:var(--dark);color:#fff;border-radius:26px;padding:18px;margin-bottom:14px}
+    .hero h1{margin:0;font-size:24px;line-height:1.2}
+    .hero p{margin:8px 0 0;color:#cbd5e1;font-size:13px;line-height:1.5}
+    .hero-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-top:12px;flex-wrap:wrap}
+    .pill{display:inline-block;background:rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:12px;color:#e5e7eb}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .btn, select{border:1px solid var(--line);background:#fff;border-radius:14px;padding:11px 12px;font:inherit;font-size:13px;color:#374151}
+    .btn.primary{background:var(--dark);color:#fff;border-color:var(--dark)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+    .head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+    .head h2{margin:0;font-size:16px}
+    .muted{font-size:12px;color:var(--muted)}
+    .item{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;margin-bottom:10px}
+    .item:last-child{margin-bottom:0}
+    .top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700}
+    .mk{background:var(--bluebg);color:var(--blue)}
+    .hk{background:var(--greenbg);color:var(--green)}
+    .title{font-size:16px;font-weight:800;line-height:1.45}
+    .summary{margin-top:8px;font-size:14px;line-height:1.65;color:#374151}
+    .meta{margin-top:8px;font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+    .link{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:#2563eb;text-decoration:none}
+    .loading,.error,.empty{padding:18px;font-size:14px;color:#4b5563;text-align:center}
+    .source-box{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+    .source-box h3{margin:0;font-size:15px}
+    .source-box p{margin:8px 0 0;font-size:13px;color:#4b5563;line-height:1.6}
+    .footer-note{font-size:12px;color:#6b7280;line-height:1.6}
+  </style>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="경제 뉴스 브리핑" />
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>경제 뉴스 브리핑</h1>
+      <p>매체별 공개 피드와 공개 인기 기사 영역을 조합해 핵심 경제 뉴스를 모아 보여주는 배포형 MVP</p>
+      <div class="hero-row">
+        <span class="pill" id="updatedAt">불러오는 중...</span>
+        <span class="pill">기사 아래 원문 링크 제공</span>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <button class="btn" id="installBtn" style="display:none;">홈 화면에 추가</button>
+      <button class="btn primary" id="refreshBtn">최신 뉴스 불러오기</button>
+      <select id="limitSelect">
+        <option value="5">상위 5개</option>
+        <option value="10">상위 10개</option>
+      </select>
+    </div>
+
+    <section class="card">
+      <div class="head">
+        <h2>오늘 브리핑</h2>
+        <span class="muted" id="countText">0건</span>
+      </div>
+      <div id="newsList" class="loading">뉴스를 불러오는 중...</div>
+    </section>
+
+    <section class="card">
+      <div class="head">
+        <h2>수집 출처</h2>
+      </div>
+      <div class="source-box">
+        <h3>매일경제</h3>
+        <p>공식 경제 RSS를 기본 데이터로 사용하고, 메인 페이지의 공개 인기기사 영역과 제목을 대조해 노출 우선순위를 보정하는 방식.</p>
+      </div>
+      <div class="source-box">
+        <h3>한국경제</h3>
+        <p>공식 경제 RSS를 기반으로 최근 경제 뉴스를 수집한다. 공개된 RSS 피드가 안정적이라 경제 섹션 중심 앱 MVP에 적합하다.</p>
+      </div>
+      <div class="footer-note">
+        이 버전은 “공개된 데이터만 활용하는 MVP” 기준이라서, 매체별 공식 조회수 API가 없는 경우에는 공개 인기영역 또는 최신 경제 피드를 조합해 보여준다.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const newsList = document.getElementById('newsList');
+    const updatedAt = document.getElementById('updatedAt');
+    const countText = document.getElementById('countText');
+    const limitSelect = document.getElementById('limitSelect');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    function renderItems(items) {
+      if (!items.length) {
+        newsList.className = 'empty';
+        newsList.textContent = '표시할 뉴스가 없습니다.';
+        countText.textContent = '0건';
+        return;
+      }
+
+      newsList.className = '';
+      newsList.innerHTML = items.map(item => `
+        <article class="item">
+          <div class="top">
+            <span class="badge ${item.source === '매일경제' ? 'mk' : 'hk'}">${item.source}${item.rank ? ' · 인기 ' + item.rank + '위' : ''}</span>
+            <span class="muted">${item.published || ''}</span>
+          </div>
+          <div class="title">${item.title}</div>
+          <div class="summary">${item.summary}</div>
+          <div class="meta">
+            <span>${item.kind}</span>
+            ${item.score ? `<span>우선순위 점수 ${item.score}</span>` : ''}
+          </div>
+          <a class="link" href="${item.link}" target="_blank" rel="noopener noreferrer">원문 보기</a>
+        </article>
+      `).join('');
+      countText.textContent = `${items.length}건`;
+    }
+
+    async function loadNews() {
+      newsList.className = 'loading';
+      newsList.textContent = '뉴스를 불러오는 중...';
+      try {
+        const limit = Number(limitSelect.value || 5);
+        const ts = Date.now();
+        const res = await fetch(`/api/news?limit=${limit}&t=${ts}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('뉴스 수집 실패');
+        const data = await res.json();
+        updatedAt.textContent = `업데이트: ${data.updatedAt}`;
+        renderItems(data.items || []);
+      } catch (err) {
+        newsList.className = 'error';
+        newsList.textContent = '뉴스를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+        countText.textContent = '오류';
+      }
+    }
+
+    refreshBtn.addEventListener('click', loadNews);
+    limitSelect.addEventListener('change', loadNews);
+    loadNews();
+  
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) installBtn.style.display = 'inline-block';
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (installBtn) installBtn.style.display = 'none';
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(console.error);
+      });
+    }
+
+  </script>
+</body>
+</html>

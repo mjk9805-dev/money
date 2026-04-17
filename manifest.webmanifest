@@ -1,0 +1,19 @@
+{
+  "name": "경제 뉴스 브리핑",
+  "short_name": "경제 브리핑",
+  "description": "주요 경제 매체의 핵심 뉴스를 빠르게 확인하는 설치형 웹앱",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#111827",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
